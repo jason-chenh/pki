@@ -1,0 +1,123 @@
+hostname C8Kv3
+!
+aaa new-model
+!
+aaa group server radius qytang-ise-group
+ server name qytise
+!
+aaa authentication login noacs none
+aaa authentication login qytang-eap-list group qytang-ise-group
+aaa authorization network qytang-eap-list group qytang-ise-group
+aaa authorization network qytang-local-group-author-list local
+!
+clock timezone GMT 8 0
+!
+ip name-server 202.100.1.100
+ip domain name qytang.com
+!
+crypto pki trustpoint CA
+ enrollment terminal
+ fqdn c8kv3.qytang.com
+ subject-name cn=c8kv3.qytang.com, ou=qytangbj, o=qytang
+ subject-alt-name c8kv3.qytang.com
+ revocation-check none
+ rsakeypair c8kv3.qytang.com 2048
+ eku request server-auth
+!
+crypto pki trustpoint DTLS
+ enrollment terminal
+ fqdn c8kv3.qytang.com
+ ip-address 202.100.3.1
+ subject-name cn=c8kv3.qytang.com,ou=qytangbj,o=qytang
+ subject-alt-name c8kv3.qytang.com
+ revocation-check none
+ rsakeypair DTLS 2048
+!
+crypto pki certificate map qytang-cert-map 10
+ subject-name co cn = win10.qytang.com
+!
+crypto ikev2 name-mangler qytang-name-mangler
+ eap suffix delimiter @
+!
+crypto ikev2 authorization policy qytang-ikev2-author
+ pool qytpool
+!
+crypto ikev2 proposal qytang-ikev2-eap-proposal
+ encryption aes-cbc-256
+ integrity sha1
+ group 2
+!
+crypto ikev2 policy qytang-ikev2-eap-policy
+ proposal qytang-ikev2-eap-proposal
+!
+!
+crypto ikev2 profile qytang-ikev2-eap-profile
+ match identity remote address 0.0.0.0
+ authentication local rsa-sig
+ authentication remote eap query-identity
+ pki trustpoint CA
+ aaa authentication eap qytang-eap-list
+ aaa authorization group eap list qytang-eap-list name-mangler qytang-name-mangler
+ virtual-template 2
+!
+crypto ikev2 profile qytang-ikev2-profile
+ match certificate qytang-cert-map
+ identity local fqdn c8kv3.qytang.com
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint CA
+ aaa authorization group cert list qytang-local-group-author-list qytang-ikev2-author
+ virtual-template 1
+!
+crypto ipsec transform-set qytang-ipsec-eap-transform-set esp-aes 256 esp-sha-hmac
+ mode tunnel
+crypto ipsec transform-set qytang-ipsec-trans esp-3des esp-sha-hmac
+ mode tunnel
+!
+crypto ipsec profile qytang-ipsec-eap-profile
+ set transform-set qytang-ipsec-eap-transform-set
+ set ikev2-profile qytang-ikev2-eap-profile
+!
+crypto ipsec profile qytang-ipsec-profile
+ set transform-set qytang-ipsec-trans
+ set ikev2-profile qytang-ikev2-profile
+!
+interface Loopback0
+ ip address 3.3.3.3 255.255.255.0
+!
+interface GigabitEthernet1
+ ip address 202.100.3.1 255.255.255.0
+ no shutdown
+!
+interface Virtual-Template1 type tunnel
+ ip unnumbered GigabitEthernet1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile qytang-ipsec-profile
+!
+interface Virtual-Template2 type tunnel
+ ip unnumbered GigabitEthernet1
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile qytang-ipsec-eap-profile
+!
+ip local pool qytpool 123.1.1.100 123.1.1.200
+!
+ip http server
+ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 202.100.3.254
+!
+radius server qytise
+ address fqdn qytise.qytang.com
+ dtls port 2083
+ dtls trustpoint client DTLS
+ dtls trustpoint server DTLS
+!
+line con 0
+ login authentication noacs
+line vty 0 4
+ transport input ssh
+!
+ntp server edu.ntp.org.cn
+ntp server ntp.ntsc.ac.cn
+ntp server 202.100.1.100
+ntp server cn.ntp.org.cn

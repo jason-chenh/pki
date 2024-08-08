@@ -1,0 +1,20 @@
+{
+    "CN": "dcloudca",
+    "hosts": [
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C": "CN",
+            "ST": "guangzhou",
+            "L": "guangzhou",
+            "O": "dcloud"
+        }
+    ],
+    "ca": {
+        "expiry": "175200h"
+    }
+}

@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:15.5.5-ce.0
+    hostname: gitlab.qytang.com
+    ports:
+      - "443:443"
+    volumes:
+# ---------------如果考虑gitlab持久化-----------------
+#      - /gitlab/config:/etc/gitlab
+#      - /gitlab/logs:/var/log/gitlab
+#      - /gitlab/data:/var/opt/gitlab
+# -----------------Gitlab初始化密码-------------------
+# cat /etc/gitlab/initial_root_password
+      - ./gitlab.pem:/etc/gitlab/ssl/gitlab.pem:ro
+      - ./gitlab-key.pem:/etc/gitlab/ssl/gitlab-key.pem:ro
+    environment:
+#      GITLAB_ROOT_EMAIL: "root@netdevops.com"
+#      GITLAB_ROOT_PASSWORD: "Cisc0123"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.qytang.com'
+        nginx['ssl_certificate'] = "/etc/gitlab/ssl/gitlab.pem"
+        nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/gitlab-key.pem"
+    restart: always

@@ -1,0 +1,54 @@
+version: '3.1'
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # HTTP配置文件
+      - ./nginix.dcloud.cisco.com.conf:/etc/nginx/conf.d/nginix.dcloud.cisco.com.conf:ro
+      # HTTPS配置文件
+      - ./nginix.dcloud.cisco.com.ssl.conf:/etc/nginx/conf.d/nginix.dcloud.cisco.com.ssl.conf:ro
+      # Index文件
+      - ./qyt_index.html:/usr/share/nginx/html/qyt_index.html
+      # 微软WIN2019的根证书
+      - ./certs/linux-root.pem:/etc/nginx/certs/linux-root.pem
+      # Linux的根证书
+      - ./certs/ms-root.cer:/etc/nginx/certs/ms-root.pem
+      # Linux证书服务器颁发的"nginix.dcloud.cisco.com"的证书  (证书类型为server)
+#      - ./certs/linux-nginx-srv-certificate.pem:/etc/nginx/certs/server.pem
+#      - ./certs/linux-nginx-srv-key.pem:/etc/nginx/certs/server-key.pem
+      # 微软WIN2019颁发的"*.dcloud.cisco.com"的证书  (证书模板为Web服务器)
+      - ./certs/ms-star.dcloud.cisco.com-cert.pem:/etc/nginx/certs/server.pem
+      - ./certs/ms-star.dcloud.cisco.com-key.pem:/etc/nginx/certs/server-key.pem
+      # Linux证书服务器颁发的"nginx-client.dcloud.cisco.com"的证书  (证书类型为client)
+      - ./certs/nginx-client.pem:/etc/nginx/certs/nginx-client.pem
+      - ./certs/nginx-client-key.pem:/etc/nginx/certs/nginx-client-key.pem
+    networks:
+      qyt_net:
+        aliases: # 在容器内网络qyt_net访问时使用的域名
+          - nginix.dcloud.cisco.com
+    restart: unless-stopped
+
+  backend-nginx:
+    image: nginx:1.25-alpine
+    volumes:
+      # HTTPS配置文件, Backend不激活HTTP服务器
+      - ./nginx-backend.dcloud.cisco.com.ssl.conf:/etc/nginx/conf.d/nginx-backend.dcloud.cisco.com.ssl.conf:ro
+      # /backend路径的index文件
+      - ./qyt_backend_index.html:/usr/share/nginx/html/backend/qyt_backend_index.html
+      # Linux的根证书
+      - ./certs/linux-root.pem:/etc/nginx/certs/linux-root.pem
+      # Linux证书服务器颁发"nginx-backend.dcloud.cisco.com"的证书 (证书类型为server)
+      - ./certs/nginx-backend.pem:/etc/nginx/certs/server.pem
+      - ./certs/nginx-backend-key.pem:/etc/nginx/certs/server-key.pem
+    networks:
+      qyt_net:
+        aliases: # 在容器内网络qyt_net访问时使用的域名
+          - nginx-backend.dcloud.cisco.com
+    restart: unless-stopped
+networks:
+  qyt_net:
+    driver: bridge

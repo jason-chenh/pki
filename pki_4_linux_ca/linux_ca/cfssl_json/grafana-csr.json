@@ -1,0 +1,20 @@
+{
+    "CN": "grafana.qytang.com",
+    "hosts": [
+        "grafana.qytang.com",
+        "202.100.1.10"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "ST": "beijing",
+            "L": "beijing",
+            "O": "qytang",
+            "OU": "qytangbj"
+        }
+    ]
+}

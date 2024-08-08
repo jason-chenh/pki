@@ -1,0 +1,19 @@
+{
+    "CN": "nginx-client.dcloud.cisco.com",
+    "hosts": [
+        "nginx-client.dcloud.cisco.com"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "ST": "guangzhou",
+            "L": "guangzhou",
+            "O": "dcloud",
+            "OU": "dcloudgz"
+        }
+    ]
+}

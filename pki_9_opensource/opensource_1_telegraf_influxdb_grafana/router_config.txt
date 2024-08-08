@@ -1,0 +1,20 @@
+netconf-yang
+
+telemetry ietf subscription 666
+ encoding encode-kvgpb
+ filter xpath /process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds
+ stream yang-push
+ update-policy periodic 1000
+ receiver ip address 202.100.1.10 57000 protocol grpc-tcp
+telemetry ietf subscription 667
+ encoding encode-kvgpb
+ filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+ stream yang-push
+ update-policy periodic 1000
+ receiver ip address 202.100.1.10 57000 protocol grpc-tcp
+telemetry ietf subscription 671
+ encoding encode-kvgpb
+ filter xpath /interfaces-ios-xe-oper:interfaces/interface/statistics
+ stream yang-push
+ update-policy periodic 1000
+ receiver ip address 202.100.1.10 57000 protocol grpc-tcp
